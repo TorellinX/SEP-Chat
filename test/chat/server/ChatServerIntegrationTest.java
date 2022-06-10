@@ -83,7 +83,9 @@ public class ChatServerIntegrationTest {
 
   @Test
   public void handleMessage_whenMessage_broadcasts() throws IOException, InterruptedException {
+    client.send(JsonMessage.login("chooseAName")); // new
     ChatTestClient otherClient = new ChatTestClient();
+    client.receiveAll(); // new
     try {
       client.send(JsonMessage.login("SomeUser"));
       otherClient.send(JsonMessage.login("AnotherUser"));

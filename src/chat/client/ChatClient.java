@@ -18,11 +18,10 @@ public class ChatClient {
 
     model.addPropertyChangeListener(chatFrame);
 
-    System.out.println("Client: Text before connection");
     ClientNetworkConnection connection = new ClientNetworkConnection(model);
     model.setConnection(connection);
     connection.start();
-    System.out.println("Client: Text after connection");
+    System.out.println("Client: connected");
 
     chatFrame.setVisible(true);
   }

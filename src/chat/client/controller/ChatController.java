@@ -1,20 +1,16 @@
 package chat.client.controller;
 
 import chat.client.model.ChatClientModel;
-import chat.client.view.ChatFrame;
 
 /**
  * The controller of the chat-UI.
  */
 public class ChatController {
 
-  // TODO: insert code here
   private final ChatClientModel model;
 
   public ChatController(ChatClientModel model) {
-    // TODO: insert code here
     this.model = model;
-
   }
 
   /**
@@ -23,13 +19,10 @@ public class ChatController {
    * @param nickname The user-name with whom the user attempts to log in.
    */
   public void login(final String nickname) {
-    // TODO: insert code here
-    if(nickname.trim().equals("")) {
+    if (nickname.trim().equals("")) {
       return;
     }
-    System.out.println("Controller: from frame: EventListener: log versuch");
     model.logInWithName(nickname);
-
   }
 
   /**
@@ -38,15 +31,18 @@ public class ChatController {
    * @param text The message that is to be send.
    */
   public void postMessage(final String text) {
-    // TODO: insert code here
-
+    model.postMessage(text);
   }
 
-  /**
-   * Run cleanup tasks.
-   */
-  public void dispose() {
-    // TODO: insert code here
-
-  }
+//  /**
+//   * Run cleanup tasks.
+//   */
+//  public void dispose() {
+//    // made in "try with resources"
+//    try {
+//      model.dispose();
+//    } catch (IOException e) {
+//      e.printStackTrace();
+//    }
+//  }
 }

@@ -22,27 +22,21 @@ public class UserTextMessage extends ChatEntry {
   }
 
   public String getSource() {
-    // TODO insert code here
-
-    return null;
+    return source;
   }
 
   public Date getTime() {
-    // TODO insert code here
-
-    return null;
+    return time;
   }
 
   public String getContent() {
-    // TODO insert code here
-
-    return null;
+    return content;
   }
 
   @Override
   public String toString() {
-    String dateString = DateFormat.getDateTimeInstance(DateFormat.MEDIUM,
-        DateFormat.SHORT, Locale.GERMANY).format(time);
+    String dateString = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT,
+        Locale.GERMANY).format(time);
     return String.format("%s (%s): %s", source, dateString, content);
   }
 }

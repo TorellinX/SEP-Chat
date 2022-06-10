@@ -4,6 +4,8 @@ import static java.util.Objects.requireNonNull;
 
 import chat.client.controller.ChatController;
 import chat.client.model.ChatClientModel;
+import chat.client.model.events.ChatEvent;
+import chat.client.model.events.MessageAddedEvent;
 import chat.client.view.chatview.ChatCellRenderer;
 import chat.client.view.chatview.ChatEntry;
 import java.awt.CardLayout;
@@ -20,6 +22,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -99,7 +102,7 @@ public class ChatFrame extends JFrame implements PropertyChangeListener {
    * Add event listeners to all widgets wherever needed and let them execute the respective action.
    */
   private void addEventListeners() {
-    nickName.addActionListener(e -> controller.login(nickName.getText()));
+    nickName.addActionListener(e -> controller.login(nickName.getText().trim()));
 
 
     inputArea.addKeyListener(new KeyAdapter() {
@@ -149,7 +152,7 @@ public class ChatFrame extends JFrame implements PropertyChangeListener {
   public void dispose() {
     super.dispose();
     model.removePropertyChangeListener(this);
-    controller.dispose();
+    //controller.dispose();
   }
 
   @Override
@@ -169,11 +172,27 @@ public class ChatFrame extends JFrame implements PropertyChangeListener {
    * @param event The {@link PropertyChangeEvent} that was fired by the model.
    */
   private void handleModelUpdate(PropertyChangeEvent event) {
-    Object newValue = event.getNewValue();
-    // TODO: insert code here
+    ChatEvent newValue = (ChatEvent) event.getNewValue();
+    String eventName = newValue.getName();
 
-    // you can use the util-methods below to switch between the login- and chat-view
-
+    switch (eventName) {
+      case "LoggedInEvent":
+        showChat();
+        break;
+      case "LoginFailedEvent":
+        showErrorMessage("Login already in use");
+        break;
+      case "MessageAddedEvent":
+        MessageAddedEvent messageAddedEvent = (MessageAddedEvent) newValue;
+        ChatEntry message = messageAddedEvent.getMessage();
+        listModel.add(listModel.getSize(),message);
+        break;
+      case "MessageRemovedEvent":
+        // TODO
+        break;
+      default:
+        throw new IllegalArgumentException("Unknown type of event.");
+    }
   }
 
   /**
@@ -192,5 +211,14 @@ public class ChatFrame extends JFrame implements PropertyChangeListener {
 
   private void showCard(String card) {
     layout.show(getContentPane(), card);
+  }
+
+  /**
+   * Displays an error message to the user.
+   *
+   * @param message The message to be displayed
+   */
+  public void showErrorMessage(String message) {
+    JOptionPane.showMessageDialog(null, message, "Uh-oh!", JOptionPane.INFORMATION_MESSAGE);
   }
 }

@@ -3,8 +3,8 @@ package chat.server;
 import java.io.IOException;
 
 /**
- * The main class of the chat server. It starts the application to let clients connect themselves
- * to this server, and deals with the distribution of incoming messages accordingly.
+ * The main class of the chat server. It starts the application to let clients connect themselves to
+ * this server, and deals with the distribution of incoming messages accordingly.
  */
 public class ChatServer {
 
@@ -17,7 +17,7 @@ public class ChatServer {
 
     Runtime.getRuntime().addShutdownHook(new Thread() {
       @Override
-      public void run(){
+      public void run() {
         try {
           connection.stop();
         } catch (IOException e) {

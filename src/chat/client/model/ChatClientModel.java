@@ -3,14 +3,19 @@ package chat.client.model;
 import static java.util.Objects.requireNonNull;
 
 import chat.client.model.events.ChatEvent;
+import chat.client.model.events.LoggedInEvent;
+import chat.client.model.events.LoginFailedEvent;
+import chat.client.model.events.MessageAddedEvent;
 import chat.client.view.chatview.ChatEntry;
+import chat.client.view.chatview.LoggedInMessage;
+import chat.client.view.chatview.UserJoinedMessage;
+import chat.client.view.chatview.UserLeftMessage;
+import chat.client.view.chatview.UserTextMessage;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import org.json.JSONException;
 
 /**
  * The model of the chat-client. Manages all the internal data belonging to a single chat client.
@@ -19,8 +24,7 @@ public class ChatClientModel {
 
   private ClientNetworkConnection connection;
   private final PropertyChangeSupport support;
-  private List<ChatEntry> messages;
-
+  private final List<ChatEntry> messages;
   private String nickname;
 
   /**
@@ -29,10 +33,7 @@ public class ChatClientModel {
    */
   public ChatClientModel() {
     support = new PropertyChangeSupport(this);
-
-    // TODO: insert code here
     messages = new ArrayList<>();
-
   }
 
   /**
@@ -68,8 +69,8 @@ public class ChatClientModel {
 
   /**
    * Notify subscribed listeners that the state of the model has changed. To this end, a specific
-   * {@link ChatEvent} gets fired such that the attached observers (i.e., {@link
-   * PropertyChangeListener}) can distinguish between what exactly has changed.
+   * {@link ChatEvent} gets fired such that the attached observers (i.e.,
+   * {@link PropertyChangeListener}) can distinguish between what exactly has changed.
    *
    * @param event A concrete implementation of {@link ChatEvent}
    */
@@ -82,11 +83,9 @@ public class ChatClientModel {
    *
    * @param nickname the chosen nickname of the chat participant.
    */
-  public void logInWithName(String nickname){
-    // TODO: insert code here
-    System.out.println("Model: from controller: from frame: from EventListener: log attempt with nickname " + nickname);
+  public void logInWithName(String nickname) {
+    this.nickname = nickname;
     connection.sendLogin(nickname);
-
   }
 
   /**
@@ -95,7 +94,8 @@ public class ChatClientModel {
    * @param message The message to be broadcast.
    */
   public void postMessage(String message) {
-    // TODO: insert code here
+    UserTextMessage userTextMessage = new UserTextMessage(nickname, new Date(), message);
+    connection.sendMessage(userTextMessage);
 
   }
 
@@ -106,8 +106,6 @@ public class ChatClientModel {
    * @return a list containing the entries of the chat.
    */
   public List<ChatEntry> getMessages() {
-    // TODO: insert code here
-
     return messages;
   }
 
@@ -116,59 +114,62 @@ public class ChatClientModel {
    * to the subscribed listeners.
    */
   public void loggedIn() {
-    // TODO: insert code here
-
+    LoggedInMessage loggedInMessage = new LoggedInMessage(nickname);
+    messages.add(loggedInMessage);
+    notifyListeners(new LoggedInEvent());
+    notifyListeners(new MessageAddedEvent(loggedInMessage));
   }
 
   /**
    * Notify the subscribed observers that a login attempt has failed.
    */
   public void loginFailed() {
-    // TODO: insert code here
-
+    notifyListeners(new LoginFailedEvent());
   }
 
   /**
-   * Add a text message to the list of chat entries.
-   * Used by the network layer to update the model accordingly.
+   * Add a text message to the list of chat entries. Used by the network layer to update the model
+   * accordingly.
    *
    * @param nickname The name of the chat participants that has sent this message.
    * @param date     The date when the chat message was sent.
    * @param content  The actual content (text) that the participant had sent.
    */
   public void addTextMessage(String nickname, Date date, String content) {
-    // TODO: insert code here
-
+    ChatEntry textMessage = new UserTextMessage(nickname, date, content);
+    messages.add(textMessage);
+    notifyListeners(new MessageAddedEvent(textMessage));
   }
 
   /**
-   * Add a status-update entry "User joined" to the list of chat entries.
-   * Used by the network layer to update the model accordingly.
+   * Add a status-update entry "User joined" to the list of chat entries. Used by the network layer
+   * to update the model accordingly.
    *
    * @param nickname The name of the newly joined user.
    */
   public void userJoined(String nickname) {
-    // TODO: insert code here
-
+    ChatEntry userJoinedMessage = new UserJoinedMessage(nickname);
+    messages.add(userJoinedMessage);
+    notifyListeners(new MessageAddedEvent(userJoinedMessage));
   }
 
   /**
-   * Add a status-update entry "User has left the chat" to the list of chat entries.
-   * Used by the network layer to update the model accordingly.
+   * Add a status-update entry "User has left the chat" to the list of chat entries. Used by the
+   * network layer to update the model accordingly.
    *
    * @param nickname
    */
   public void userLeft(String nickname) {
-    // TODO: insert code here
-
+    ChatEntry userLeftMessage = new UserLeftMessage(nickname);
+    messages.add(userLeftMessage);
+    notifyListeners(new MessageAddedEvent(userLeftMessage));
   }
 
-  /**
-   * Cleanup the resources.
-   */
-  public void dispose() throws IOException {
-    // TODO: insert code here
-    connection.stop();
-
-  }
+//  /**
+//   * Cleanup the resources.
+//   */
+//  // made in "try with resources"
+//  public void dispose() throws IOException {
+//    connection.stop();
+//  }
 }

@@ -17,7 +17,8 @@ public class ChatCellRenderer extends JTextArea implements ListCellRenderer<Chat
   public ChatCellRenderer() {
     super();
     setOpaque(true);
-    dateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM);
+    //dateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM);
+    dateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT);
   }
 
   @Override
