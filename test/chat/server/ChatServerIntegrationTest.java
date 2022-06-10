@@ -9,22 +9,40 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+/**
+ * The network-connection of the server. Establishes a connection with clients and takes care of
+ * sending and receiving messages in JSON format.
+ */
 public class ChatServerIntegrationTest {
 
   private ServerNetworkConnection serverConnection;
 
   private ChatTestClient client;
+  private Thread thread;
 
+  //  @BeforeEach
+//  public void setUp() throws IOException {
+//    serverConnection = new ServerNetworkConnection();
+//    serverConnection.start();
+//
+//    client = new ChatTestClient();
+//  }
   @BeforeEach
-  public void setUp() throws IOException {
+  public void setUp() throws IOException, InterruptedException {
     serverConnection = new ServerNetworkConnection();
-    serverConnection.start();
-
+    thread = new Thread(){
+      @Override
+      public void run() {
+        serverConnection.start();
+      }
+    };
+    thread.start();
     client = new ChatTestClient();
   }
 
   @AfterEach
   public void tearDown() throws IOException {
+    thread.interrupt();
     serverConnection.stop();
     client.close();
   }
@@ -83,16 +101,17 @@ public class ChatServerIntegrationTest {
 
   @Test
   public void handleMessage_whenMessage_broadcasts() throws IOException, InterruptedException {
-    client.send(JsonMessage.login("chooseAName")); // new
+    //client.send(JsonMessage.login("TestUser")); // my
+    //receiveAllClientMessages(); // my
+
     ChatTestClient otherClient = new ChatTestClient();
-    client.receiveAll(); // new
     try {
       client.send(JsonMessage.login("SomeUser"));
       otherClient.send(JsonMessage.login("AnotherUser"));
+      Thread.sleep(200); // my
       otherClient.send(JsonMessage.postMessage("Hi!"));
-
       List<JSONObject> messages = receiveAllClientMessages();
-
+      System.out.println(messages);
       Assertions.assertTrue(hasMessageOfType(JsonMessage.MESSAGE, messages));
 
       JSONObject message = getMessageOfType(JsonMessage.MESSAGE, messages);
@@ -107,7 +126,9 @@ public class ChatServerIntegrationTest {
   }
 
   @Test
-  public void handleMessage_whenLoggedIn_broadcasts() throws IOException {
+  public void handleMessage_whenLoggedIn_broadcasts() throws IOException, InterruptedException  {
+    client.send(JsonMessage.login("TestUser")); // new
+    receiveAllClientMessages(); // new
     ChatTestClient otherClient = new ChatTestClient();
     try {
       otherClient.send(JsonMessage.login("SomeUser"));
@@ -124,6 +145,7 @@ public class ChatServerIntegrationTest {
   @Test
   public void handleMessage_whenLoggedInAndDisconnect_broadcasts()
       throws IOException, InterruptedException {
+    client.send(JsonMessage.login("TestUser"));
     ChatTestClient otherClient = new ChatTestClient();
     try {
       otherClient.send(JsonMessage.login("SomeUser"));

@@ -7,6 +7,9 @@ import javax.swing.JList;
 import javax.swing.JTextArea;
 import javax.swing.ListCellRenderer;
 
+/**
+ * A Renderer for a single ChatEntry in JTextArea.
+ */
 public class ChatCellRenderer extends JTextArea implements ListCellRenderer<ChatEntry> {
 
   @Serial
@@ -14,6 +17,9 @@ public class ChatCellRenderer extends JTextArea implements ListCellRenderer<Chat
 
   private final DateFormat dateFormat;
 
+  /**
+   * Create a renderer.
+   */
   public ChatCellRenderer() {
     super();
     setOpaque(true);
@@ -23,8 +29,8 @@ public class ChatCellRenderer extends JTextArea implements ListCellRenderer<Chat
 
   @Override
   public Component getListCellRendererComponent(JList<? extends ChatEntry> list,
-                                                ChatEntry value, int index, boolean isSelected,
-                                                boolean cellHasFocus) {
+      ChatEntry value, int index, boolean isSelected,
+      boolean cellHasFocus) {
     setBackground(list.getBackground());
     setForeground(list.getForeground());
 

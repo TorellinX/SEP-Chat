@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -25,6 +26,8 @@ public class ServerNetworkConnection {
   private static final int PORT = 8080;
   private final List<User> users;
 
+  private Thread serverThread;
+
   /**
    * TODO: insert JavaDoc
    */
@@ -37,53 +40,66 @@ public class ServerNetworkConnection {
    * Start the network-connection such that clients can establish a connection to this server.
    */
   public void start() {
+    //serverThread = new Thread() {
+    //  @Override
+    //  public void run() {
     System.out.println("Server is waiting for connections...");
-    while (true) {
-      try {
-        Socket socket = serverSocket.accept();
-        Thread thread = new Thread() {
-          @Override
-          public void run() {
-            try {
-              System.out.println("Server: new connection via socket " + socket);
+        while (true) {
+          try {
+            Socket socket = serverSocket.accept();
+            Thread thread = new Thread() {
+              @Override
+              public void run() {
+                try {
+                  System.out.println("Server: new connection via socket " + socket);
 
-              OutputStreamWriter writer = new OutputStreamWriter(socket.getOutputStream(), UTF_8);
-              BufferedReader reader = new BufferedReader(
-                  new InputStreamReader(socket.getInputStream(), UTF_8));
+                  OutputStreamWriter writer = new OutputStreamWriter(socket.getOutputStream(),
+                      UTF_8);
+                  BufferedReader reader = new BufferedReader(
+                      new InputStreamReader(socket.getInputStream(), UTF_8));
 
-              while (true) {
-                String line = reader.readLine();
-                if (line == null) {
-                  System.out.println("Server: Client disconnected");
-                  return;
-                }
-                System.out.println("Server: Message from client: " + line);
-                JSONObject receivedMessage = new JSONObject(line);
-                String type = (String) receivedMessage.get("type");
-                if (!type.equals("login")) {
-                  throw new IllegalArgumentException("Client not logged in");
-                }
-                if (receivedMessage.get("nick").toString().trim().equals("")) {
-                  continue;
-                }
-                if (!checkLogin(receivedMessage)) {
-                  sendLoginFailedMessage(writer);
-                  continue;
-                } else {
-                  handleLoginSuccess(receivedMessage, writer, socket);
+                  while (true) {
+                    String line = reader.readLine();
+                    if (line == null) {
+                      System.out.println("Server: Client disconnected");
+                      return;
+                    }
+                    System.out.println("Server: Message from client: " + line);
+                    JSONObject receivedMessage = new JSONObject(line);
+                    String type = (String) receivedMessage.get("type");
+                    if (!type.equals("login")) {
+                      throw new IllegalArgumentException("Client not logged in");
+                    }
+                    if (receivedMessage.get("nick").toString().trim().equals("")) {
+                      continue;
+                    }
+                    if (!checkLogin(receivedMessage)) {
+                      sendLoginFailedMessage(writer);
+                      continue;
+                    } else {
+                      handleLoginSuccess(receivedMessage, writer, socket);
+                    }
+                  }
+                }  catch (IOException | JSONException e) {
+                  e.printStackTrace();
                 }
               }
-            } catch (IOException | JSONException e) {
-              e.printStackTrace();
+            };
+            thread.setDaemon(true);
+            thread.start();
+          } catch (SocketException e) {
+            if (serverSocket.isClosed()) {
+              // Server was stopped, exiting the thread
+              return;
             }
+            e.printStackTrace();
+          } catch (IOException e) {
+            e.printStackTrace();
           }
-        };
-        thread.setDaemon(true);
-        thread.start();
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
-    }
+        }
+     // }
+   // };
+    //serverThread.start();
   }
 
   private boolean checkLogin(JSONObject loginRequestMessage)
@@ -170,7 +186,7 @@ public class ServerNetworkConnection {
             throw new IllegalArgumentException("The client is already logged in.");
 
           case "post message":
-//                { "type" : "post message", "content" : "<message content>" }
+            //    { "type" : "post message", "content" : "<message content>" }
             String content = (String) userMessage.get("content");
             sendTextMessage(user, content);
             break;
@@ -199,10 +215,10 @@ public class ServerNetworkConnection {
   }
 
   private void sendTextMessage(User source, String content) throws JSONException, IOException {
-//                { "type" : "message",
-//                  "time" : "<day>.<month>.<year> <hour>:<minute>:<second>",
-//                  "nick" : "<sender>",
-//                  "content" : "<message content>" }
+    //            { "type" : "message",
+    //              "time" : "<day>.<month>.<year> <hour>:<minute>:<second>",
+    //              "nick" : "<sender>",
+    //              "content" : "<message content>" }
     JSONObject textMessage = new JSONObject();
     textMessage.put("type", "message");
     // TODO: Date from content ????????
@@ -219,5 +235,6 @@ public class ServerNetworkConnection {
    */
   public void stop() throws IOException {
     serverSocket.close();
+//    serverThread.interrupt();
   }
 }

@@ -15,6 +15,13 @@ public class UserTextMessage extends ChatEntry {
 
   private final String content;
 
+  /**
+   * Create a chat text message.
+   *
+   * @param source  the Nickname of the sending user.
+   * @param time    the time, when the message was sent.
+   * @param content the text-content of the message
+   */
   public UserTextMessage(String source, Date time, String content) {
     this.source = source;
     this.time = time;
@@ -26,7 +33,7 @@ public class UserTextMessage extends ChatEntry {
   }
 
   public Date getTime() {
-    return time;
+    return (Date) time.clone();
   }
 
   public String getContent() {

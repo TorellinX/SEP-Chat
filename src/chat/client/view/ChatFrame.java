@@ -31,9 +31,9 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 
 /**
- * The main view of the chat user interface. It provides and connects all graphical elements
- * that are necessary for a chat application. It provides a user a screen for logging in, and
- * in case of success shows afterwards the necessary elements for writing and reading chat messages.
+ * The main view of the chat user interface. It provides and connects all graphical elements that
+ * are necessary for a chat application. It provides a user a screen for logging in, and in case of
+ * success shows afterwards the necessary elements for writing and reading chat messages.
  */
 public class ChatFrame extends JFrame implements PropertyChangeListener {
 
@@ -103,7 +103,6 @@ public class ChatFrame extends JFrame implements PropertyChangeListener {
    */
   private void addEventListeners() {
     nickName.addActionListener(e -> controller.login(nickName.getText().trim()));
-
 
     inputArea.addKeyListener(new KeyAdapter() {
       @Override
@@ -185,10 +184,10 @@ public class ChatFrame extends JFrame implements PropertyChangeListener {
       case "MessageAddedEvent":
         MessageAddedEvent messageAddedEvent = (MessageAddedEvent) newValue;
         ChatEntry message = messageAddedEvent.getMessage();
-        listModel.add(listModel.getSize(),message);
+        listModel.add(listModel.getSize(), message);
         break;
       case "MessageRemovedEvent":
-        // TODO
+        //
         break;
       default:
         throw new IllegalArgumentException("Unknown type of event.");
@@ -196,14 +195,14 @@ public class ChatFrame extends JFrame implements PropertyChangeListener {
   }
 
   /**
-   * Show the login view to the user
+   * Show the login view to the user.
    */
   private void showLogin() {
     showCard(LOGIN_CARD);
   }
 
   /**
-   * Show the chat view to the user
+   * Show the chat view to the user.
    */
   private void showChat() {
     showCard(CHAT_CARD);

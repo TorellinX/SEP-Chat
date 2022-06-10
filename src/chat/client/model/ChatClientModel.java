@@ -96,7 +96,8 @@ public class ChatClientModel {
   public void postMessage(String message) {
     UserTextMessage userTextMessage = new UserTextMessage(nickname, new Date(), message);
     connection.sendMessage(userTextMessage);
-
+    addTextMessage(userTextMessage.getSource(), userTextMessage.getTime(),
+        userTextMessage.getContent());
   }
 
   /**
@@ -106,7 +107,7 @@ public class ChatClientModel {
    * @return a list containing the entries of the chat.
    */
   public List<ChatEntry> getMessages() {
-    return messages;
+    return new ArrayList<>(messages);
   }
 
   /**
@@ -157,7 +158,7 @@ public class ChatClientModel {
    * Add a status-update entry "User has left the chat" to the list of chat entries. Used by the
    * network layer to update the model accordingly.
    *
-   * @param nickname
+   * @param nickname nickname of the user
    */
   public void userLeft(String nickname) {
     ChatEntry userLeftMessage = new UserLeftMessage(nickname);
@@ -165,11 +166,11 @@ public class ChatClientModel {
     notifyListeners(new MessageAddedEvent(userLeftMessage));
   }
 
-//  /**
-//   * Cleanup the resources.
-//   */
-//  // made in "try with resources"
-//  public void dispose() throws IOException {
-//    connection.stop();
-//  }
+  //  /**
+  //   * Cleanup the resources.
+  //   */
+  //  // made in "try with resources"
+  //  public void dispose() throws IOException {
+  //    connection.stop();
+  //  }
 }

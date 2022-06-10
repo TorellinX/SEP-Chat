@@ -10,6 +10,9 @@ import chat.client.view.ChatFrame;
  */
 public class ChatClient {
 
+  /**
+   * Launch the chat server.
+   */
   public static void main(String[] args) {
 
     ChatClientModel model = new ChatClientModel();

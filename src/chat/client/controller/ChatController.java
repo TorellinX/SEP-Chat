@@ -34,15 +34,15 @@ public class ChatController {
     model.postMessage(text);
   }
 
-//  /**
-//   * Run cleanup tasks.
-//   */
-//  public void dispose() {
-//    // made in "try with resources"
-//    try {
-//      model.dispose();
-//    } catch (IOException e) {
-//      e.printStackTrace();
-//    }
-//  }
+  //  /**
+  //   * Run cleanup tasks.
+  //   */
+  //  public void dispose() {
+  //    // made in "try with resources"
+  //    try {
+  //      model.dispose();
+  //    } catch (IOException e) {
+  //      e.printStackTrace();
+  //    }
+  //  }
 }

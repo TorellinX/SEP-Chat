@@ -9,10 +9,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -48,27 +46,27 @@ public class ClientNetworkConnection {
           String type = (String) receivedMessage.get("type");
           switch (type) {
             case "login failed" -> {
-//                  { "type" : "login failed" }
+              //    { "type" : "login failed" }
               System.out.println("Client: login-failed-message received");
               model.loginFailed();
             }
             case "login success" -> {
-//                  { "type" : "login success" }
+              //    { "type" : "login success" }
               System.out.println("Client: login-success-message received");
               model.loggedIn();
             }
             case "user joined" -> {
-//                  { "type" : "user joined", "nick" : "<nick>" }
+              //      { "type" : "user joined", "nick" : "<nick>" }
               System.out.println(
                   "Client: user-joined-message received. User " + receivedMessage.get("nick"));
               model.userJoined((String) receivedMessage.get("nick"));
             }
             case "message" -> {
-//                  { "type" : "message",
-//                    "time" : "<day>.<month>.<year> <hour>:<minute>:<second>",
-//                    "nick" : "<sender>",
-//                    "content" : "<message content>"
-//                  }
+              //   { "type" : "message",
+              //      "time" : "<day>.<month>.<year> <hour>:<minute>:<second>",
+              //      "nick" : "<sender>",
+              //      "content" : "<message content>"
+              //    }
               System.out.println("Client: Text-message received. " + receivedMessage);
               model.addTextMessage((String) receivedMessage.get("nick"),
                   new SimpleDateFormat("dd.MM.yyyy HH:mm:ss").parse(
@@ -76,7 +74,7 @@ public class ClientNetworkConnection {
                   (String) receivedMessage.get("content"));
             }
             case "user left" -> {
-//                  { "type" : "user left", "nick" : "<nick>" }
+              //    { "type" : "user left", "nick" : "<nick>" }
               System.out.println(
                   "Client: user-left-message received. User " + receivedMessage.get("nick"));
               model.userLeft((String) receivedMessage.get("nick"));
@@ -92,12 +90,12 @@ public class ClientNetworkConnection {
     thread.start();
   }
 
-//  /**
-//   * Stop the network-connection.
-//   */
-//  public void stop() throws IOException {
-//    // made in "try with resources"
-//  }
+  //  /**
+  //   * Stop the network-connection.
+  //   */
+  //  public void stop() throws IOException {
+  //    // made in "try with resources"
+  //  }
 
   /**
    * Send a login-request to the server.
@@ -128,7 +126,6 @@ public class ClientNetworkConnection {
   public void sendMessage(UserTextMessage chatMessage) {
     // { "type" : "post message", "content" : "<message content>" }
     try {
-      // TODO: Date in msg ????????
       JSONObject postMessage = new JSONObject();
       postMessage.put("type", "post message");
       postMessage.put("content", requireNonNull(chatMessage.getContent()));
@@ -137,9 +134,6 @@ public class ClientNetworkConnection {
       writer.flush();
 
       System.out.println("Sent post-message to server: " + postMessage);
-
-      model.addTextMessage(chatMessage.getSource(), chatMessage.getTime(),
-          chatMessage.getContent());
 
     } catch (IOException | JSONException e) {
       e.printStackTrace();

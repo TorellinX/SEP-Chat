@@ -13,6 +13,13 @@ public class User {
   private final OutputStreamWriter writer;
   private final Socket socket;
 
+  /**
+   * Create a single connected client.
+   *
+   * @param name   the name of the client
+   * @param writer the stream to the client
+   * @param socket the socket tp the client
+   */
   public User(String name, OutputStreamWriter writer, Socket socket) {
     this.name = name;
     this.socket = socket;
