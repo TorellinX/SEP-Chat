@@ -12,6 +12,9 @@ import java.util.List;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+/**
+ * Test client.
+ */
 public class ChatTestClient {
 
   private static final String ADDRESS = "localhost";
@@ -21,6 +24,11 @@ public class ChatTestClient {
   private final BufferedWriter writer;
   private final BufferedReader reader;
 
+  /**
+   * Create a test client.
+   *
+   * @throws IOException IOException
+   */
   public ChatTestClient() throws IOException {
     socket = new Socket(ADDRESS, PORT);
     writer = new BufferedWriter(
@@ -34,6 +42,12 @@ public class ChatTestClient {
     writer.flush();
   }
 
+  /**
+   * Receive all messages.
+   *
+   * @return list of messages
+   * @throws IOException IOException
+   */
   public List<JSONObject> receiveAll() throws IOException {
     List<JSONObject> messages = new ArrayList<>();
     while (reader.ready()) {
@@ -42,6 +56,12 @@ public class ChatTestClient {
     return messages;
   }
 
+  /**
+   * Receive message.
+   *
+   * @return message
+   * @throws IOException IOException
+   */
   public JSONObject receive() throws IOException {
     try {
       String line = reader.readLine();

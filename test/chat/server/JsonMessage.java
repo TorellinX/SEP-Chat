@@ -9,6 +9,9 @@ import java.util.Optional;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+/**
+ * Test-messages class.
+ */
 public enum JsonMessage {
 
   LOGIN("login"), LOGIN_SUCCESS("login success"), LOGIN_FAILED("login failed"),
@@ -29,6 +32,12 @@ public enum JsonMessage {
     this.jsonName = jsonName;
   }
 
+  /**
+   * Defines a type of the message.
+   *
+   * @param message JSONobject
+   * @return type of the message
+   */
   public static JsonMessage typeOf(JSONObject message) {
     String typeName;
     try {
@@ -44,6 +53,12 @@ public enum JsonMessage {
         () -> new IllegalArgumentException(String.format("Unknown message type '%s'", typeName)));
   }
 
+  /**
+   * Adds a login-message to the list of messages.
+   *
+   * @param nickname of test client
+   * @return JSON message of LOGIN type
+   */
   public static JSONObject login(String nickname) {
     try {
       return createMessageOfType(LOGIN).put(NICK_FIELD, nickname);
@@ -52,6 +67,12 @@ public enum JsonMessage {
     }
   }
 
+  /**
+   * Adds a post message to the list of messages.
+   *
+   * @param content of the message
+   * @return JSON message
+   */
   public static JSONObject postMessage(String content) {
     try {
       JSONObject message = createMessageOfType(POST_MESSAGE);
@@ -67,6 +88,12 @@ public enum JsonMessage {
     return new JSONObject().put(TYPE_FIELD, type.getJsonName());
   }
 
+  /**
+   * Get nickname from the message.
+   *
+   * @param object JSON message
+   * @return nickname
+   */
   public static String getNickname(JSONObject object) {
     try {
       return object.getString(NICK_FIELD);
@@ -75,6 +102,12 @@ public enum JsonMessage {
     }
   }
 
+  /**
+   * Get content from the message.
+   *
+   * @param object JSON message
+   * @return content
+   */
   public static String getContent(JSONObject object) {
     try {
       return object.getString(CONTENT_FIELD);

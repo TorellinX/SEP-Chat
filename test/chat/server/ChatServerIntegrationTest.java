@@ -10,27 +10,32 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
- * The network-connection of the server. Establishes a connection with clients and takes care of
- * sending and receiving messages in JSON format.
+ * Chat Server Integration Test.
  */
 public class ChatServerIntegrationTest {
 
   private ServerNetworkConnection serverConnection;
-
   private ChatTestClient client;
   private Thread thread;
 
-  //  @BeforeEach
-//  public void setUp() throws IOException {
-//    serverConnection = new ServerNetworkConnection();
-//    serverConnection.start();
-//
-//    client = new ChatTestClient();
-//  }
+  /*  @BeforeEach
+  public void setUp() throws IOException {
+    serverConnection = new ServerNetworkConnection();
+    serverConnection.start();
+
+    client = new ChatTestClient();
+  }*/
+
+  /**
+   * BeforeEach setUp.
+   *
+   * @throws IOException          IOException
+   * @throws InterruptedException InterruptedException
+   */
   @BeforeEach
   public void setUp() throws IOException, InterruptedException {
     serverConnection = new ServerNetworkConnection();
-    thread = new Thread(){
+    thread = new Thread() {
       @Override
       public void run() {
         serverConnection.start();
@@ -40,6 +45,11 @@ public class ChatServerIntegrationTest {
     client = new ChatTestClient();
   }
 
+  /**
+   * AfterEach tearDown.
+   *
+   * @throws IOException IOException
+   */
   @AfterEach
   public void tearDown() throws IOException {
     thread.interrupt();
@@ -126,7 +136,7 @@ public class ChatServerIntegrationTest {
   }
 
   @Test
-  public void handleMessage_whenLoggedIn_broadcasts() throws IOException, InterruptedException  {
+  public void handleMessage_whenLoggedIn_broadcasts() throws IOException, InterruptedException {
     client.send(JsonMessage.login("TestUser")); // new
     receiveAllClientMessages(); // new
     ChatTestClient otherClient = new ChatTestClient();
@@ -179,7 +189,8 @@ public class ChatServerIntegrationTest {
   }
 
   private JSONObject getMessageOfType(JsonMessage type, List<JSONObject> messages) {
-    Optional<JSONObject> opt = messages.stream().filter(x -> type == JsonMessage.typeOf(x)).findFirst();
+    Optional<JSONObject> opt = messages.stream().filter(x -> type == JsonMessage.typeOf(x))
+        .findFirst();
     return opt.orElse(null);
   }
 }

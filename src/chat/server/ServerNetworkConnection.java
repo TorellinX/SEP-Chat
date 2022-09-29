@@ -26,10 +26,8 @@ public class ServerNetworkConnection {
   private static final int PORT = 8080;
   private final List<User> users;
 
-  private Thread serverThread;
-
   /**
-   * TODO: insert JavaDoc
+   * Creates an instance of network connection.
    */
   public ServerNetworkConnection() throws IOException {
     this.serverSocket = new ServerSocket(PORT);
@@ -40,69 +38,70 @@ public class ServerNetworkConnection {
    * Start the network-connection such that clients can establish a connection to this server.
    */
   public void start() {
-    //serverThread = new Thread() {
-    //  @Override
-    //  public void run() {
     System.out.println("Server is waiting for connections...");
-        while (true) {
-          try {
-            Socket socket = serverSocket.accept();
-            Thread thread = new Thread() {
-              @Override
-              public void run() {
-                try {
-                  System.out.println("Server: new connection via socket " + socket);
+    while (true) {
+      try {
+        Socket socket = serverSocket.accept();
+        Thread thread = new Thread() {
+          @Override
+          public void run() {
+            try {
+              System.out.println("Server: new connection via socket " + socket);
 
-                  OutputStreamWriter writer = new OutputStreamWriter(socket.getOutputStream(),
-                      UTF_8);
-                  BufferedReader reader = new BufferedReader(
-                      new InputStreamReader(socket.getInputStream(), UTF_8));
+              OutputStreamWriter writer = new OutputStreamWriter(socket.getOutputStream(),
+                  UTF_8);
+              BufferedReader reader = new BufferedReader(
+                  new InputStreamReader(socket.getInputStream(), UTF_8));
 
-                  while (true) {
-                    String line = reader.readLine();
-                    if (line == null) {
-                      System.out.println("Server: Client disconnected");
-                      return;
-                    }
-                    System.out.println("Server: Message from client: " + line);
-                    JSONObject receivedMessage = new JSONObject(line);
-                    String type = (String) receivedMessage.get("type");
-                    if (!type.equals("login")) {
-                      throw new IllegalArgumentException("Client not logged in");
-                    }
-                    if (receivedMessage.get("nick").toString().trim().equals("")) {
-                      continue;
-                    }
-                    if (!checkLogin(receivedMessage)) {
-                      sendLoginFailedMessage(writer);
-                      continue;
-                    } else {
-                      handleLoginSuccess(receivedMessage, writer, socket);
-                    }
-                  }
-                }  catch (IOException | JSONException e) {
-                  e.printStackTrace();
+              while (true) {
+                String line = reader.readLine();
+                if (line == null) {
+                  System.out.println("Server: Client disconnected");
+                  return;
+                }
+                System.out.println("Server: Message from client: " + line);
+                JSONObject receivedMessage = new JSONObject(line);
+                String type = (String) receivedMessage.get("type");
+                if (!type.equals("login")) {
+                  throw new IllegalArgumentException("Client not logged in");
+                }
+                if (receivedMessage.get("nick").toString().trim().equals("")) {
+                  continue;
+                }
+                if (!isNicknameFree(receivedMessage)) {
+                  sendLoginFailedMessage(writer);
+                  continue;
+                } else {
+                  handleLoginSuccess(receivedMessage, writer, socket);
                 }
               }
-            };
-            thread.setDaemon(true);
-            thread.start();
-          } catch (SocketException e) {
-            if (serverSocket.isClosed()) {
-              // Server was stopped, exiting the thread
-              return;
+            } catch (IOException | JSONException e) {
+              e.printStackTrace();
             }
-            e.printStackTrace();
-          } catch (IOException e) {
-            e.printStackTrace();
           }
+        };
+        thread.setDaemon(true);
+        thread.start();
+      } catch (SocketException e) {
+        if (serverSocket.isClosed()) {
+          // Server was stopped, exiting the thread
+          return;
         }
-     // }
-   // };
-    //serverThread.start();
+        e.printStackTrace();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
+    }
   }
 
-  private boolean checkLogin(JSONObject loginRequestMessage)
+  /**
+   * Check if the nickname is not used by another client.
+   *
+   * @param loginRequestMessage message from client with login-request
+   * @return true, when the nickname is free
+   * @throws JSONException if the message don't have appropriate format
+   */
+  private boolean isNicknameFree(JSONObject loginRequestMessage)
       throws JSONException {
     // received: { "type" : "login", "nick" : "<nick>" }
     String nickname = loginRequestMessage.get("nick").toString().trim();
@@ -116,6 +115,11 @@ public class ServerNetworkConnection {
     return true;
   }
 
+  /**
+   * Send a message to the client, that login is failed.
+   *
+   * @param writer output stream to the client
+   */
   private void sendLoginFailedMessage(OutputStreamWriter writer) {
     // { "type" : "login failed" }
     try {
@@ -128,6 +132,13 @@ public class ServerNetworkConnection {
     }
   }
 
+  /**
+   * Executes routines upon successful connection..
+   *
+   * @param loginRequestMessage message from client with login-request
+   * @param writer              output stream to the client
+   * @param socket              socket through which the client is connected
+   */
   private void handleLoginSuccess(JSONObject loginRequestMessage, OutputStreamWriter writer,
       Socket socket) {
     try {
@@ -141,6 +152,14 @@ public class ServerNetworkConnection {
     }
   }
 
+
+  /**
+   * Send a message to the client, that login is successful.
+   *
+   * @param writer output stream to the client
+   * @throws JSONException if the message don't have appropriate format
+   * @throws IOException   if the output stream is not open
+   */
   private void sendLoginSuccessMessage(OutputStreamWriter writer)
       throws JSONException, IOException {
     // { "type" : "login success" }
@@ -150,6 +169,13 @@ public class ServerNetworkConnection {
     writer.flush();
   }
 
+  /**
+   * Send a message to the clients, that user joined the chat.
+   *
+   * @param loggedUser joined client
+   * @throws JSONException if the message don't have appropriate format
+   * @throws IOException   if the output stream is not open
+   */
   private void sendUserJoinedMessage(User loggedUser) throws JSONException, IOException {
     // { "type" : "user joined", "nick" : "<nick>" }
     JSONObject userJoinedMessage = new JSONObject();
@@ -158,6 +184,13 @@ public class ServerNetworkConnection {
     broadcast(loggedUser, userJoinedMessage);
   }
 
+  /**
+   * Send a message to all clients in the chat except the source.
+   *
+   * @param source  source client
+   * @param message message to be sent
+   * @throws IOException if the output stream is not open
+   */
   private void broadcast(User source, JSONObject message) throws IOException {
     for (User u : users) {
       if (u == source) {
@@ -168,7 +201,11 @@ public class ServerNetworkConnection {
     }
   }
 
-
+  /**
+   * Handles logged client.
+   *
+   * @param user logged client
+   */
   private void handleLoggedUser(User user) {
     try {
       BufferedReader reader = new BufferedReader(
@@ -182,17 +219,13 @@ public class ServerNetworkConnection {
         JSONObject userMessage = new JSONObject(line);
         String type = (String) userMessage.get("type");
         switch (type) {
-          case "login":
-            throw new IllegalArgumentException("The client is already logged in.");
-
-          case "post message":
+          case "login" -> throw new IllegalArgumentException("The client is already logged in.");
+          case "post message" -> {
             //    { "type" : "post message", "content" : "<message content>" }
             String content = (String) userMessage.get("content");
             sendTextMessage(user, content);
-            break;
-
-          default:
-            throw new IllegalArgumentException("Unknown type of message.");
+          }
+          default -> throw new IllegalArgumentException("Unknown type of message.");
         }
       }
     } catch (IOException | JSONException e) {
@@ -200,12 +233,26 @@ public class ServerNetworkConnection {
     }
   }
 
+  /**
+   * Handles disconnected client.
+   *
+   * @param user disconnected client
+   * @throws IOException   if the output stream is not open
+   * @throws JSONException if the message don't have appropriate format
+   */
   private void handleDisconnectedUser(User user) throws IOException, JSONException {
     user.getSocket().close();
     users.remove(user);
     sendUserLeftMessage(user);
   }
 
+  /**
+   * Send a message to the clients, that user left the chat.
+   *
+   * @param user disconnected client
+   * @throws JSONException if the output stream is not open
+   * @throws IOException   if the message don't have appropriate format
+   */
   private void sendUserLeftMessage(User user) throws JSONException, IOException {
     // { "type" : "user left", "nick" : "<nick>" }
     JSONObject userLeftMessage = new JSONObject();
@@ -214,6 +261,14 @@ public class ServerNetworkConnection {
     broadcast(user, userLeftMessage);
   }
 
+  /**
+   * Send a message from the source-client to the other clients in the chat.
+   *
+   * @param source  source-client
+   * @param content message
+   * @throws JSONException if the output stream is not open
+   * @throws IOException   if the message don't have appropriate format
+   */
   private void sendTextMessage(User source, String content) throws JSONException, IOException {
     //            { "type" : "message",
     //              "time" : "<day>.<month>.<year> <hour>:<minute>:<second>",
@@ -221,7 +276,6 @@ public class ServerNetworkConnection {
     //              "content" : "<message content>" }
     JSONObject textMessage = new JSONObject();
     textMessage.put("type", "message");
-    // TODO: Date from content ????????
     textMessage.put("time", new SimpleDateFormat("dd.MM.yyyy HH:mm:ss").format(
         new Date()));
     textMessage.put("nick", source.getName());
@@ -235,6 +289,5 @@ public class ServerNetworkConnection {
    */
   public void stop() throws IOException {
     serverSocket.close();
-//    serverThread.interrupt();
   }
 }
